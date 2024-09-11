@@ -6,6 +6,7 @@ import process from "process";
 import bodyparser from "body-parser";
 import { saveMissing } from "./saveMissing.js";
 import fs from "fs";
+import translate from "translate";
 
 type Config = {
   locales: string[];
@@ -17,7 +18,7 @@ type Config = {
 // Extend the ServerResponse interface with body from bodyparser
 declare module "http" {
   interface IncomingMessage {
-    body?: any;
+    body?: unknown;
   }
 }
 
@@ -96,10 +97,34 @@ function handleI18NextRequest(config: Config) {
                     );
                   } catch (error) {
                     console.error("Error creating file:", error);
+                    res.statusCode = 500;
+                    res.end(
+                      "Error creating file - Translation file could not be created!",
+                    );
                   }
                 }
 
-                await saveMissing(filePath, req.body, locale)
+                // descructure the newTranslation object { key: value }
+                const message = req.body as { [key: string]: string };
+
+                const [arr] = Object.entries(message);
+                let [objPath, value] = arr;
+
+                if (config.translate) {
+                  await translate(value, locale.slice(0, 2))
+                    .then((data) => {
+                      value = data;
+                    })
+                    .catch((err) => {
+                      console.error(err);
+                      res.statusCode = 500;
+                      res.end(
+                        "Error translating - Translation Service not reachable?",
+                      );
+                    });
+                }
+
+                await saveMissing(filePath, objPath, value)
                   .then((response) => {
                     res.statusCode = response.statusCode;
                     res.end(response.statsMessage);

@@ -19,8 +19,8 @@ function setNestedProperty(
 
 export function saveMissing(
   filePath: string,
-  newTranslation: { key: string },
-  locale: string,
+  path: string,
+  value: string,
 ): Promise<{ statusCode: number; statsMessage: string }> {
   return new Promise(async (resolve, reject) => {
     // read input file
@@ -58,25 +58,7 @@ export function saveMissing(
       });
     }
 
-    // descructure the newTranslation object { key: value }
-    const [arr] = Object.entries(newTranslation);
-    const [key, value] = arr;
-
-    const translated = await translate(value, locale.slice(0, 2)).catch(
-      (err) => {
-        console.error(err);
-        return null;
-      },
-    );
-
-    if (translated === null) {
-      return reject({
-        statusCode: 500,
-        statsMessage: "Error translating - Translation Service not reachable?",
-      });
-    }
-
-    setNestedProperty(parsedJson.data, key, translated);
+    setNestedProperty(parsedJson.data, path, value);
 
     const data = await fs.promises
       .writeFile(filePath, JSON.stringify(parsedJson.data, null, 2), "utf8")
@@ -89,7 +71,7 @@ export function saveMissing(
       });
 
     if (data.success) {
-      console.log(`Added translation for key ${key}`);
+      console.log(`Added translation for ${path}`);
       return resolve({
         statusCode: 200,
         statsMessage: "Translation added successfully",
