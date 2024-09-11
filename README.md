@@ -22,3 +22,15 @@ export default defineConfig({
   plugins: [ handleI18NextRequest(config)],
 });
 ```
+
+## Plurals
+
+To add plurals add options with correct suffixes and **count** e.g.
+
+```js
+{
+  defaultValue_one: "singular",
+  defaultValue_other: "plural",
+  count: 2
+}
+```
