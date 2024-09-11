@@ -26,7 +26,7 @@ export function saveMissing(
     fs.readFile(filePath, "utf8", async (err, data) => {
       if (err) {
         console.error(err);
-        reject({ statusCode: 500, statsMessage: "Error reading file" });
+        return reject({ statusCode: 500, statsMessage: "Error reading file" });
       }
 
       let namespace;
@@ -34,21 +34,26 @@ export function saveMissing(
         namespace = JSON.parse(data);
       } catch (parseErr) {
         console.error(parseErr);
-        reject({ statusCode: 500, statsMessage: "Error parsing JSON" });
+        return reject({ statusCode: 500, statsMessage: "Error parsing JSON" });
       }
 
       const [arr] = Object.entries(newTranslation);
       const [key, value] = arr;
 
-      const translated = await translate(value, locale).catch((err) => {
-        console.error(err);
-        reject({
+      const translated = await translate(value, locale.slice(0, 2)).catch(
+        (err) => {
+          console.error(err);
+          return null;
+        },
+      );
+
+      if (!translated) {
+        return reject({
           statusCode: 500,
           statsMessage:
             "Error translating - Translation Service not reachable?",
         });
-        return "";
-      });
+      }
 
       setNestedProperty(namespace, key, translated);
 
@@ -59,7 +64,10 @@ export function saveMissing(
         (writeErr) => {
           if (writeErr) {
             console.error(writeErr);
-            reject({ statusCode: 500, statsMessage: "Error writing file" });
+            return reject({
+              statusCode: 500,
+              statsMessage: "Error writing file",
+            });
           }
 
           console.log(`Added translation for key ${key}`);

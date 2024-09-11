@@ -1,11 +1,12 @@
 {
   "compilerOptions": {
-    "target": "ES6", // Still target ES6 to support modern JS features
+    "target": "ESNext", // Still target ES6 to support modern JS features
     "module": "ESNext", // Use ESNext for native ES modules (import/export)
     "declaration": true, // Generate type declaration files (.d.ts)
     "outDir": "./dist", // Output directory for compiled code
     "strict": true, // Enable strict type-checking options
     "esModuleInterop": true, // Allows default imports from CommonJS modules
+    "allowSyntheticDefaultImports": true,
     "skipLibCheck": true,
     "moduleResolution": "node"
   },
