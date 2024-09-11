@@ -51,6 +51,7 @@ async function processQueue() {
 function handleI18NextRequest(config: Config) {
   return {
     name: "vite-plugin-i18next-save-missing",
+    apply: "serve",
     configureServer(server: ViteDevServer) {
       server.middlewares.use(bodyparser.json());
       server.middlewares.use(
