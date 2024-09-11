@@ -21,6 +21,32 @@ declare module "http" {
   }
 }
 
+// implement basic queue to handle multiple requests
+const queue: Array<Function> = [];
+let isProcessing = false;
+
+async function processQueue() {
+  if (isProcessing || queue.length === 0) return;
+
+  // Mark as processing
+  isProcessing = true;
+
+  const task = queue.shift(); // Get the first task from the queue
+
+  // Run the task (which is the async function that does the file processing)
+  if (task) {
+    await task();
+  } else {
+    console.error("Queue Empty!");
+  }
+
+  // Mark as done processing
+  isProcessing = false;
+
+  // Process the next task
+  processQueue();
+}
+
 function handleI18NextRequest(config: Config) {
   return {
     name: "vite-plugin-i18next-save-missing",
@@ -34,8 +60,9 @@ function handleI18NextRequest(config: Config) {
           next: NextFunction,
         ) => {
           if (req.method === "POST") {
-            await Promise.all(
-              config.locales.map(async (locale) => {
+            // create task and add it to queue
+            const task = async () => {
+              for (const locale of config.locales) {
                 const pathSegments = config.path.split("/");
 
                 const args = [
@@ -81,8 +108,14 @@ function handleI18NextRequest(config: Config) {
                     res.statusCode = err.statusCode;
                     res.end(err.statsMessage);
                   });
-              }),
-            );
+              }
+            };
+
+            // Push the task into the queue
+            queue.push(task);
+
+            // Start processing the queue (if not already processing)
+            !isProcessing && processQueue();
           } else {
             next();
           }
