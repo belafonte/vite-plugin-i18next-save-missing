@@ -4,6 +4,7 @@ type Config = {
     path: string;
     namespace?: string;
     translate?: boolean;
+    translateFrom?: string;
 };
 declare module "http" {
     interface IncomingMessage {

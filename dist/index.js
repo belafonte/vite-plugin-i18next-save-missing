@@ -70,7 +70,10 @@ function handleI18NextRequest(config) {
                             const [arr] = Object.entries(message);
                             let [objPath, value] = arr;
                             if (config.translate) {
-                                await translate(value, locale.slice(0, 2))
+                                await translate(value, {
+                                    to: locale.slice(0, 2),
+                                    from: config.translateFrom || "en",
+                                })
                                     .then((data) => {
                                     value = data;
                                 })

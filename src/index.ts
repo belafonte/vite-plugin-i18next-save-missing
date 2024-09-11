@@ -13,6 +13,7 @@ type Config = {
   path: string;
   namespace?: string;
   translate?: boolean;
+  translateFrom?: string;
 };
 
 // Extend the ServerResponse interface with body from bodyparser
@@ -113,7 +114,10 @@ function handleI18NextRequest(config: Config) {
                 let [objPath, value] = arr;
 
                 if (config.translate) {
-                  await translate(value, locale.slice(0, 2))
+                  await translate(value, {
+                    to: locale.slice(0, 2),
+                    from: config.translateFrom || "en",
+                  })
                     .then((data) => {
                       value = data;
                     })
