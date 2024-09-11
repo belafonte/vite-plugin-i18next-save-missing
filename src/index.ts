@@ -105,6 +105,7 @@ function handleI18NextRequest(config: Config) {
                 }
 
                 // descructure the newTranslation object { key: value }
+                // TODO: validate with zod
                 const message = req.body as { [key: string]: string };
 
                 const [arr] = Object.entries(message);
